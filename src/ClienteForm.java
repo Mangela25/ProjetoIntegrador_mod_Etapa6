@@ -57,31 +57,46 @@ public class ClienteForm extends JFrame {
     }
 
     private void salvarCliente() {
-        String nome = nomeField.getText();
-        String rg = rgField.getText();
-        String cpf = cpfField.getText();
-        String endereco = enderecoField.getText();
+    String nome = nomeField.getText();
+    String rg = rgField.getText();
+    String cpf = cpfField.getText();
+    String endereco = enderecoField.getText();
 
-        if (nome.isEmpty() || rg.isEmpty() || cpf.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.");
-            return;
-        }
-
-        try (Connection conexao = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/projetointegrador_db_atividade2", "root", "1234")) {
-            String sql = "INSERT INTO clientes (nome, rg, cpf, endereco) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-                stmt.setString(1, nome);
-                stmt.setString(2, rg);
-                stmt.setString(3, cpf);
-                stmt.setString(4, endereco);
-                stmt.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso!");
-                dispose();
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao cadastrar cliente: " + e.getMessage());
-        }
+    // Validação dos campos obrigatórios
+    if (nome.isEmpty() || rg.isEmpty() || cpf.isEmpty() || endereco.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.");
+        return;
     }
+
+    // Validação do CPF (11 dígitos)
+    if (!cpf.matches("^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$") && !cpf.matches("^\\d{11}$")) {
+        JOptionPane.showMessageDialog(this, "CPF inválido! O formato correto é XXX.XXX.XXX-XX ou apenas os 11 dígitos.");
+        return;
+    }
+
+    // Validação do RG (7 a 15 dígitos)
+    if (!rg.matches("^\\d{7,15}$")) {
+        JOptionPane.showMessageDialog(this, "RG inválido! O RG deve ter entre 7 a 15 dígitos.");
+        return;
+    }
+
+    // Conexão com o banco de dados e inserção
+    try (Connection conexao = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/projetointegrador_db_atividade2", "root", "1234")) {
+        String sql = "INSERT INTO clientes (nome, rg, cpf, endereco) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
+            stmt.setString(1, nome);
+            stmt.setString(2, rg);
+            stmt.setString(3, cpf);
+            stmt.setString(4, endereco);
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso!");
+            dispose();
+        }
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Erro ao cadastrar cliente: " + e.getMessage());
+    }
+}
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
